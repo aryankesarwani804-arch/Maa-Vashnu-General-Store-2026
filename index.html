@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#176b45">
+<title>Maa Vaishno General Store</title>
+<style>
+:root{--green:#176b45;--light:#f3f8f4;--ink:#17231c;--muted:#68756d;--line:#e3ebe5}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Noto Sans Devanagari",sans-serif;background:#f6f8f6;color:var(--ink)}
+header{background:var(--green);color:white;padding:22px 16px 18px}header h1{font-size:23px;margin:0 0 5px}header p{margin:0;font-size:13px;opacity:.9}
+main{max-width:900px;margin:auto;padding:16px}.search{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:12px;font-size:16px;margin:4px 0 14px}
+.tabs{display:flex;gap:8px;overflow:auto;padding-bottom:12px}.tab{border:1px solid var(--line);background:white;border-radius:20px;padding:9px 13px;white-space:nowrap;cursor:pointer}.tab.active{background:var(--green);color:white;border-color:var(--green)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px}.product{background:white;border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;min-height:180px}
+.emoji{height:65px;display:grid;place-items:center;font-size:42px;background:var(--light);border-radius:10px;margin-bottom:9px}
+.product h3{font-size:15px;margin:0 0 5px}.price{font-weight:bold;color:var(--green);margin-bottom:10px}.product button,.primary{border:0;background:var(--green);color:white;padding:10px;border-radius:9px;font-weight:bold;cursor:pointer;margin-top:auto}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin:18px 0 12px}.section-title h2{font-size:18px;margin:0}
+.cart{background:white;border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:22px}.cart-row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}.qty button{border:1px solid var(--line);background:#fff;border-radius:7px;padding:3px 9px;margin:0 4px}
+.total{display:flex;justify-content:space-between;font-weight:bold;padding:13px 0;font-size:17px}
+.field{width:100%;padding:11px;border:1px solid var(--line);border-radius:9px;margin:6px 0 10px;font-size:15px}
+.note{font-size:12px;color:var(--muted);line-height:1.5}.empty{color:var(--muted);font-size:14px;padding:8px 0}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:24px 12px}
+.admin{background:white;border:1px dashed #a9b8ae;border-radius:12px;padding:14px;margin-top:18px}.admin summary{font-weight:bold;cursor:pointer}.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.admin-grid .field{margin:0}.small{font-size:12px;color:var(--muted)}
+@media(max-width:420px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><h1>🌸 Maa Vaishno General Store</h1><p>आपकी रोज़मर्रा की ज़रूरतों का भरोसेमंद स्टोर</p></header>
+<main>
+<input id="search" class="search" placeholder="🔎 सामान खोजें..." oninput="renderProducts()">
+<div class="section-title"><h2>सामान की कैटेगरी</h2></div>
+<div id="tabs" class="tabs"></div>
+<div class="section-title"><h2>उपलब्ध सामान</h2><span class="small" id="count"></span></div>
+<div id="products" class="grid"></div>
+<section class="cart">
+ <div class="section-title"><h2>🛒 आपका कार्ट</h2><button class="tab" onclick="clearCart()">खाली करें</button></div>
+ <div id="cartItems" class="empty">अभी कार्ट खाली है।</div>
+ <div class="total"><span>कुल रकम</span><span id="total">₹0</span></div>
+ <label class="small" for="customer">आपका नाम</label><input id="customer" class="field" placeholder="नाम लिखें">
+ <label class="small" for="address">डिलीवरी का पता</label><textarea id="address" class="field" rows="2" placeholder="पूरा पता लिखें"></textarea>
+ <label class="small" for="phone">आपका मोबाइल नंबर (वैकल्पिक)</label><input id="phone" class="field" placeholder="मोबाइल नंबर">
+ <button class="primary" style="width:100%" onclick="placeOrder()">WhatsApp पर ऑर्डर भेजें</button>
+ <p class="note">ऑर्डर भेजने से पहले सामान और कुल रकम जाँच लें। डिलीवरी की उपलब्धता और शुल्क दुकान से पुष्टि करें।</p>
+</section>
+<details class="admin">
+ <summary>दुकानदार सेटिंग — सामान और WhatsApp नंबर बदलें</summary>
+ <p class="small">यह सेटिंग इसी ब्राउज़र/डिवाइस में सेव होती है। ग्राहकों को अपडेट दिखाने के लिए ऐप की फाइल/ऑनलाइन साइट अपडेट करनी होगी।</p>
+ <label class="small">दुकान का WhatsApp नंबर (देश कोड सहित, जैसे 91XXXXXXXXXX)</label>
+ <input id="storePhone" class="field" placeholder="91XXXXXXXXXX">
+ <button class="tab" onclick="savePhone()">नंबर सेव करें</button>
+ <hr style="border:0;border-top:1px solid var(--line);margin:15px 0">
+ <h3 style="font-size:15px">नया सामान जोड़ें</h3>
+ <div class="admin-grid">
+  <input id="newName" class="field" placeholder="सामान का नाम">
+  <input id="newPrice" class="field" type="number" min="0" placeholder="कीमत ₹">
+  <input id="newCategory" class="field" placeholder="कैटेगरी">
+  <input id="newEmoji" class="field" placeholder="इमोजी, जैसे 🥫">
+ </div>
+ <button class="primary" style="margin-top:9px" onclick="addProduct()">सामान जोड़ें</button>
+ <button class="tab" onclick="resetProducts()">डेमो सामान वापस लाएँ</button>
+</details>
+</main>
+<footer>धन्यवाद! Maa Vaishno General Store में खरीदारी करने के लिए।</footer>
+<script>
+const defaults=[
+ {id:1,name:"आटा 1 kg",price:40,cat:"राशन",emoji:"🌾"},
+ {id:2,name:"चावल 1 kg",price:60,cat:"राशन",emoji:"🍚"},
+ {id:3,name:"दाल 1 kg",price:110,cat:"राशन",emoji:"🫘"},
+ {id:4,name:"चीनी 1 kg",price:45,cat:"राशन",emoji:"🧂"},
+ {id:5,name:"खाने का तेल 1 L",price:140,cat:"राशन",emoji:"🫗"},
+ {id:6,name:"नमक 1 kg",price:22,cat:"राशन",emoji:"🧂"},
+ {id:7,name:"बिस्कुट",price:10,cat:"स्नैक्स",emoji:"🍪"},
+ {id:8,name:"नमकीन",price:20,cat:"स्नैक्स",emoji:"🥨"},
+ {id:9,name:"साबुन",price:35,cat:"पर्सनल केयर",emoji:"🧼"},
+ {id:10,name:"शैम्पू",price:2,cat:"पर्सनल केयर",emoji:"🧴"},
+ {id:11,name:"टूथपेस्ट",price:55,cat:"पर्सनल केयर",emoji:"🪥"},
+ {id:12,name:"कोल्ड ड्रिंक",price:40,cat:"ड्रिंक्स",emoji:"🥤"}
+];
+let products=JSON.parse(localStorage.getItem("mv_products")||"null")||defaults;
+let cart={};let active="सभी";
+function save(){localStorage.setItem("mv_products",JSON.stringify(products))}
+function cats(){return ["सभी",...new Set(products.map(p=>p.cat))]}
+function renderTabs(){document.getElementById("tabs").innerHTML=cats().map(c=>`<button class="tab ${active===c?'active':''}" onclick="active=${JSON.stringify(c)};renderTabs();renderProducts()">${c}</button>`).join("")}
+function renderProducts(){
+ const q=document.getElementById("search").value.toLowerCase();
+ const list=products.filter(p=>(active==="सभी"||p.cat===active)&&p.name.toLowerCase().includes(q));
+ document.getElementById("count").textContent=list.length+" आइटम";
+ document.getElementById("products").innerHTML=list.length?list.map(p=>`<article class="product"><div class="emoji">${p.emoji||"🛍️"}</div><h3>${esc(p.name)}</h3><div class="price">₹${p.price}</div><button onclick="addCart(${p.id})">कार्ट में डालें</button></article>`).join(""):'<p class="empty">कोई सामान नहीं मिला।</p>';
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function addCart(id){cart[id]=(cart[id]||0)+1;renderCart()}
+function changeQty(id,d){cart[id]=(cart[id]||0)+d;if(cart[id]<=0)delete cart[id];renderCart()}
+function renderCart(){
+ let items=Object.entries(cart).filter(([id,q])=>q>0);
+ document.getElementById("cartItems").innerHTML=items.length?items.map(([id,q])=>{let p=products.find(x=>x.id==id);return p?`<div class="cart-row"><span>${esc(p.name)}<br><b>₹${p.price*q}</b></span><span class="qty"><button onclick="changeQty(${id},-1)">−</button>${q}<button onclick="changeQty(${id},1)">+</button></span></div>`:""}).join(""):'<div class="empty">अभी कार्ट खाली है।</div>';
+ document.getElementById("total").textContent="₹"+items.reduce((s,[id,q])=>{let p=products.find(x=>x.id==id);return s+(p?p.price*q:0)},0);
+}
+function clearCart(){cart={};renderCart()}
+function placeOrder(){
+ let items=Object.entries(cart).filter(([id,q])=>q>0);
+ if(!items.length){alert("पहले कार्ट में सामान जोड़ें।");return}
+ let name=document.getElementById("customer").value.trim(),addr=document.getElementById("address").value.trim();
+ if(!name||!addr){alert("कृपया अपना नाम और डिलीवरी का पता भरें।");return}
+ let phone=(localStorage.getItem("mv_phone")||"").replace(/\D/g,"");
+ if(phone.length<10){alert("दुकानदार सेटिंग में अपना WhatsApp नंबर देश कोड सहित सेव करें।");return}
+ let lines=items.map(([id,q])=>{let p=products.find(x=>x.id==id);return p?`${p.name} x ${q} = ₹${p.price*q}`:""}).join("\n");
+ let total=items.reduce((s,[id,q])=>{let p=products.find(x=>x.id==id);return s+(p?p.price*q:0)},0);
+ let msg=`नया ऑर्डर - Maa Vaishno General Store\nनाम: ${name}\nपता: ${addr}\nमोबाइल: ${document.getElementById("phone").value||"नहीं दिया"}\n\n${lines}\n\nकुल: ₹${total}\nकृपया ऑर्डर की पुष्टि करें।`;
+ window.open("https://wa.me/"+phone+"?text="+encodeURIComponent(msg),"_blank");
+}
+function savePhone(){let p=document.getElementById("storePhone").value.replace(/\D/g,"");if(p.length<10){alert("सही WhatsApp नंबर लिखें।");return}localStorage.setItem("mv_phone",p);alert("नंबर इस डिवाइस में सेव हो गया।")}
+function addProduct(){
+ let name=document.getElementById("newName").value.trim(),price=Number(document.getElementById("newPrice").value),cat=document.getElementById("newCategory").value.trim(),emoji=document.getElementById("newEmoji").value.trim()||"🛍️";
+ if(!name||!Number.isFinite(price)||price<0||!cat){alert("नाम, सही कीमत और कैटेगरी भरें।");return}
+ products.push({id:Date.now(),name,price,cat,emoji});save();["newName","newPrice","newCategory","newEmoji"].forEach(id=>document.getElementById(id).value="");active="सभी";renderTabs();renderProducts()
+}
+function resetProducts(){if(confirm("डेमो सामान वापस लाएँ? आपके जोड़े सामान हट जाएँगे।")){products=defaults;save();active="सभी";renderTabs();renderProducts()}}
+renderTabs();renderProducts();renderCart();
+let savedPhone=localStorage.getItem("mv_phone");if(savedPhone)document.getElementById("storePhone").value=savedPhone;
+</script>
+</body></html>
